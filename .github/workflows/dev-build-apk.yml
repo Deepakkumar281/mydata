@@ -1,0 +1,58 @@
+name: react-native-android-build-apk
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - name: Install npm dependencies
+        run: |
+          npm install
+      - name: Build Android Release
+        run: |
+          cd android && ./gradlew assembleRelease
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: app-release.apk
+          path: android/app/build/outputs/apk/release/
+      - name: Rename Attachment
+        run: |
+           mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/app-release.zip
+      - name: Send mail
+        uses: dawidd6/action-send-mail@v3
+        with:
+          # Specify connection via URL (replaces server_address, server_port, secure,
+          # username and password)
+          #
+          # Format:
+          #
+          #  * smtp://user:password@server:port
+          #  * smtp+starttls://user:password@server:port
+          # Required mail server address if not connection_url:
+          server_address: smtp.mailgun.org
+          # Server port, default 25:
+          server_port: 465
+          # Optional whether this connection use TLS (default is true if server_port is 465)
+          secure: true
+          # Optional (recommended): mail server username:
+          username: no-reply@mail.axebelk.in
+          # Optional (recommended) mail server password:
+          password: cb9d21a415b64951beed6ebd41643339-bdb2c8b4-40b0b45b
+          # Required mail subject:
+          subject: Github Actions job result
+          # Required recipients' addresses:
+          to: md.axebelk@gmail.com
+          # Required sender full name (address can be skipped):
+          from: Vijay
+          # Optional plain body:
+          body: Build job of ${{github.repository}} completed successfully!
+          # Optional HTML body read from file:
+          ignore_cert: true
+          # Optional attachments:
+          attachments: android/app/build/outputs/apk/release/app-release.zip
+          # Optional priority: 'high', 'normal' (default) or 'low'
+          priority: low

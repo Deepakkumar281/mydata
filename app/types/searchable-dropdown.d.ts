@@ -1,0 +1,1 @@
+declare module 'searchable-dropdown-react-native'
